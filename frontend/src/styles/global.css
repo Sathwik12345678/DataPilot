@@ -1,0 +1,437 @@
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:black;
+color:white;
+font-family:Inter,system-ui;
+cursor:none;
+overflow-x:hidden;
+}
+
+/* ---------- GLASS NAVBAR ---------- */
+
+.navbar{
+position:fixed;
+top:0;
+width:100%;
+backdrop-filter:blur(14px);
+background:rgba(255,255,255,.06);
+border-bottom:1px solid rgba(255,255,255,.15);
+z-index:10;
+}
+
+.nav-container{
+max-width:1200px;
+margin:auto;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:16px 30px;
+}
+
+.logo{
+font-weight:700;
+font-size:22px;
+color:white;
+text-decoration:none;
+}
+
+.nav-menu{
+display:flex;
+gap:30px;
+list-style:none;
+}
+
+.nav-link{
+color:#bbb;
+text-decoration:none;
+font-size:14px;
+}
+
+.nav-link:hover{
+color:white;
+}
+
+.nav-link-cta{
+background:white;
+color:black;
+padding:8px 16px;
+border-radius:6px;
+}
+
+/* ---------- HERO ---------- */
+
+.hero{
+height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-align:center;
+padding-top:120px;
+}
+
+.hero-name{
+font-size:72px;
+font-weight:700;
+margin-bottom:16px;
+}
+
+.hero-tagline{
+font-size:20px;
+color:#aaa;
+margin-bottom:30px;
+max-width:600px;
+}
+
+/* ---------- LETTER HOVER ---------- */
+
+.zoom-text span{
+display:inline-block;
+transition:transform .2s ease;
+}
+
+.zoom-text span:hover{
+transform:scale(1.5);
+}
+
+/* ---------- BUTTONS ---------- */
+
+.btn{
+padding:14px 28px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:14px;
+margin:6px;
+}
+
+.btn-primary{
+background:white;
+color:black;
+}
+
+.btn-secondary{
+border:1px solid white;
+background:transparent;
+color:white;
+}
+
+/* ---------- FLOATING DASHBOARD ---------- */
+
+.floating-dashboard{
+width:640px;
+height:360px;
+border-radius:16px;
+background:rgba(255,255,255,.06);
+border:1px solid rgba(255,255,255,.2);
+backdrop-filter:blur(12px);
+margin-top:60px;
+padding:20px;
+transition:transform .2s;
+}
+
+/* ---------- CURSOR ---------- */
+
+.cursor{
+position:fixed;
+top:0;
+left:0;
+pointer-events:none;
+z-index:100;
+}
+
+.cursor-dot{
+width:8px;
+height:8px;
+background:white;
+border-radius:50%;
+position:fixed;
+transform:translate(-50%,-50%);
+}
+
+.cursor-outline{
+width:40px;
+height:40px;
+border:2px solid rgba(255,255,255,.6);
+border-radius:50%;
+position:fixed;
+transform:translate(-50%,-50%);
+transition:transform .2s;
+}
+
+.cursor.hovering .cursor-dot{
+transform:translate(-50%,-50%) scale(2);
+}
+
+.cursor.hovering .cursor-outline{
+transform:translate(-50%,-50%) scale(1.6);
+}
+
+/* ---------- DASHBOARD ---------- */
+
+.dashboard-container{
+height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+gap:20px;
+}
+/* AUTH */
+
+.auth-container{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.auth-card{
+
+width:380px;
+padding:40px;
+
+background:rgba(255,255,255,.05);
+
+border:1px solid rgba(255,255,255,.2);
+
+backdrop-filter:blur(12px);
+
+border-radius:12px;
+
+display:flex;
+flex-direction:column;
+gap:16px;
+
+text-align:center;
+
+}
+
+.auth-card h2{
+margin-bottom:10px;
+}
+
+.auth-card input{
+
+padding:12px;
+border-radius:6px;
+border:1px solid rgba(255,255,255,.3);
+background:transparent;
+color:white;
+
+}
+
+.auth-card a{
+color:#4f8cff;
+}
+
+/* DASHBOARD */
+
+.chart-card{
+
+width:700px;
+
+background:rgba(255,255,255,.06);
+
+border:1px solid rgba(255,255,255,.2);
+
+backdrop-filter:blur(10px);
+
+padding:20px;
+
+border-radius:14px;
+
+}
+
+.dashboard-container{
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:30px;
+padding-top:120px;
+}
+
+/* BUTTON */
+
+.btn-primary{
+
+padding:12px;
+
+background:white;
+
+color:black;
+
+border:none;
+
+border-radius:6px;
+
+cursor:pointer;
+
+}
+/* DASHBOARD */
+
+.dashboard-container{
+
+height:100vh;
+
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+
+text-align:center;
+gap:20px;
+
+}
+
+.dashboard-subtitle{
+
+color:#aaa;
+
+}
+
+.upload-card{
+
+background:rgba(255,255,255,.05);
+
+border:1px solid rgba(255,255,255,.2);
+
+padding:40px;
+
+border-radius:14px;
+
+display:flex;
+flex-direction:column;
+gap:20px;
+
+}
+
+/* NAVBAR */
+
+.navbar{
+
+position:fixed;
+top:0;
+width:100%;
+
+backdrop-filter:blur(10px);
+
+background:rgba(0,0,0,.5);
+
+border-bottom:1px solid rgba(255,255,255,.1);
+
+}
+
+.nav-container{
+
+max-width:1200px;
+margin:auto;
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+padding:18px;
+
+}
+
+.nav-menu{
+
+display:flex;
+gap:30px;
+list-style:none;
+
+}
+
+.nav-link{
+
+color:#bbb;
+text-decoration:none;
+
+}
+
+.nav-link:hover{
+
+color:white;
+
+}
+
+.nav-link-cta{
+
+background:white;
+color:black;
+
+padding:8px 16px;
+
+border-radius:6px;
+
+}
+
+/* AUTH */
+
+.auth-container{
+
+height:100vh;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+}
+
+.auth-card{
+
+width:380px;
+
+background:rgba(255,255,255,.05);
+
+border:1px solid rgba(255,255,255,.2);
+
+backdrop-filter:blur(10px);
+
+padding:40px;
+
+border-radius:14px;
+
+display:flex;
+flex-direction:column;
+gap:16px;
+
+}
+
+.auth-card input{
+
+padding:12px;
+
+background:transparent;
+
+border:1px solid rgba(255,255,255,.3);
+
+border-radius:6px;
+
+color:white;
+
+}
+
+/* BUTTON */
+
+.btn-primary{
+
+padding:12px;
+
+border:none;
+
+border-radius:6px;
+
+background:white;
+
+color:black;
+
+cursor:pointer;
+
+}

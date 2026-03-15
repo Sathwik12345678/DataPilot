@@ -1,35 +1,68 @@
-import { motion } from "framer-motion"
+import { useNavigate } from "react-router-dom"
+import { useEffect } from "react"
+import FloatingDashboard from "./FloatingDashboard"
 
-function Hero() {
-  return (
-    <section className="relative text-center py-32 bg-gradient-to-r from-indigo-500 to-purple-600 text-white overflow-hidden">
+function Hero(){
 
-      <motion.div
-        animate={{ y: [0, -20, 0] }}
-        transition={{ repeat: Infinity, duration: 6 }}
-        className="absolute w-72 h-72 bg-white opacity-10 rounded-full top-10 left-10"
-      />
+const navigate=useNavigate()
 
-      <motion.div
-        animate={{ y: [0, 20, 0] }}
-        transition={{ repeat: Infinity, duration: 8 }}
-        className="absolute w-96 h-96 bg-white opacity-10 rounded-full bottom-10 right-10"
-      />
+function splitText(text){
+return text.split("").map((c,i)=>(
+<span key={i}>{c}</span>
+))
+}
 
-      <h1 className="text-6xl font-bold mb-6 relative z-10">
-        Understand Your Data Instantly
-      </h1>
+useEffect(()=>{
 
-      <p className="text-xl mb-10 max-w-2xl mx-auto relative z-10">
-        Upload datasets and generate insights, charts and reports automatically.
-      </p>
+const card=document.querySelector(".floating-dashboard")
 
-      <button className="bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-200 relative z-10">
-        Upload Dataset
-      </button>
+window.addEventListener("mousemove",e=>{
 
-    </section>
-  )
+let x=(window.innerWidth/2-e.clientX)/30
+let y=(window.innerHeight/2-e.clientY)/30
+
+card.style.transform=`rotateY(${x}deg) rotateX(${y}deg)`
+
+})
+
+},[])
+
+return(
+
+<section className="hero">
+
+<h1 className="hero-name zoom-text">
+{splitText("DataPilot")}
+</h1>
+
+<p className="hero-tagline zoom-text">
+{splitText("Upload datasets and generate insights instantly")}
+</p>
+
+<div>
+
+<button
+className="btn btn-primary"
+onClick={()=>navigate("/signup")}
+>
+Get Started
+</button>
+
+<button
+className="btn btn-secondary"
+onClick={()=>navigate("/dashboard")}
+>
+Dashboard
+</button>
+
+</div>
+
+<FloatingDashboard/>
+
+</section>
+
+)
+
 }
 
 export default Hero
