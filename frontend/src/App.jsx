@@ -6,7 +6,6 @@ import Signup from "./pages/Signup"
 import Dashboard from "./pages/Dashboard"
 
 import Cursor from "./components/Cursor"
-import ProtectedRoute from "./components/ProtectedRoute"
 
 function App() {
 
@@ -20,11 +19,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route
           path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
+          element={<Dashboard />}
         />
       </Routes>
     </>

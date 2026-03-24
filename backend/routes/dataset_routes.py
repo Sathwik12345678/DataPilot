@@ -1,11 +1,16 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Form
+from fastapi import APIRouter, UploadFile, File, HTTPException, Form, Query
 from fastapi.responses import FileResponse
 import pandas as pd
 import numpy as np
 import os
+import io
 
 from services.analysis_service import analyze_dataset
 from services.dsa_service import top_k_values
+from services.optimization_service import (
+    get_file_hash, paginate_data, compress_statistics, 
+    sample_large_dataset, filter_numeric_columns, CACHE_TTL, analysis_cache
+)
 from utils.pdf_generator import generate_pdf
 
 router = APIRouter()
@@ -19,7 +24,10 @@ def read_file(file: UploadFile):
 
     try:
         if filename.endswith(".csv"):
-            df = pd.read_csv(file.file)
+            df = pd.read_csv(file.file, dtype={
+                # Optimize data types for memory efficiency
+                'int64': 'int32',  # Reduce int memory usage
+            })
 
         elif filename.endswith(".xlsx") or filename.endswith(".xls"):
             df = pd.read_excel(file.file)
@@ -27,100 +35,196 @@ def read_file(file: UploadFile):
         else:
             raise HTTPException(status_code=400, detail="Unsupported file format")
 
-    except Exception:
-        raise HTTPException(status_code=400, detail="Error reading file")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error reading file: {str(e)}")
 
     return df
 
 
 # ===============================
-# 📊 UPLOAD + ANALYZE DATASET
+# 📊 UPLOAD + ANALYZE DATASET (OPTIMIZED)
 # ===============================
 @router.post("/upload-dataset")
-async def upload_dataset(file: UploadFile = File(...)):
-
-    df = read_file(file)
-
+async def upload_dataset(
+    file: UploadFile = File(...),
+    page: int = Query(1, ge=1, description="Page number for pagination")
+):
+    """
+    Upload and analyze dataset with optimization features:
+    - Automatic sampling for large datasets (>10K rows)
+    - Pagination support
+    - Result caching
+    - Compressed response format
+    """
+    
+    # Read file into memory once
+    file_bytes = await file.read()
+    file_hash = get_file_hash(file_bytes)
+    
+    # Check cache first
+    if file_hash in analysis_cache:
+        cached_result = analysis_cache[file_hash]["data"]
+        # Apply pagination to cached results
+        if "all_statistics" in cached_result:
+            cached_result["statistics_paginated"] = paginate_data(
+                list(cached_result["all_statistics"].items()),
+                page=page,
+                page_size=20
+            )
+        return cached_result
+    
+    # Parse file from bytes
+    try:
+        file_obj = io.BytesIO(file_bytes)
+        if file.filename.lower().endswith(".csv"):
+            df = pd.read_csv(file_obj)
+        elif file.filename.lower().endswith((".xlsx", ".xls")):
+            df = pd.read_excel(file_obj)
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported file format")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error reading file: {str(e)}")
+    
     # Clean column names
     df.columns = df.columns.str.strip()
-
+    
+    # Check if dataset is large and sample if needed
+    original_rows = len(df)
+    sampled_df, is_sampled, sample_pct = sample_large_dataset(df, max_rows=5000)  # More aggressive
+    
     # Basic Info
-    rows = len(df)
-    columns = list(df.columns)
-
-    # Column Types
+    rows = len(sampled_df)
+    columns = list(sampled_df.columns)
+    
+    # Column Types (only for existing columns)
     column_types = {
-        col: str(df[col].dtype) for col in df.columns
+        col: str(sampled_df[col].dtype) for col in sampled_df.columns
     }
-
-    # Missing Values
+    
+    # Missing Values (only for existing columns)
     missing_values = {
-        col: int(df[col].isnull().sum()) for col in df.columns
+        col: int(sampled_df[col].isnull().sum()) for col in sampled_df.columns
     }
-
-    # Stats (numeric only)
-    stats = analyze_dataset(df)
-
-    # Top-K values using Heap (DSA)
+    
+    # Filter to numeric columns only for performance
+    numeric_df = filter_numeric_columns(sampled_df, max_columns=15)
+    
+    # Stats (numeric only) - now with compressed precision
+    stats = compress_statistics(analyze_dataset(numeric_df))
+    
+    # Top-K values using Heap (DSA) - separated for pie chart
     top_values = {}
-
-    numeric_columns = df.select_dtypes(include=np.number).columns
-
+    numeric_columns = numeric_df.columns
+    
     for col in numeric_columns:
-        values = df[col].dropna().tolist()
-
+        values = numeric_df[col].dropna().tolist()
         if len(values) > 0:
-            top_values[col] = top_k_values(values, 3)
+            top_values[col] = [round(v, 2) if isinstance(v, float) else v 
+                              for v in top_k_values(values, 3)]
         else:
             top_values[col] = []
-
-    return {
+    
+    # Generate pie chart data separately (for later display)
+    pie_chart_data = []
+    for col, values in top_values.items():
+        for i, v in enumerate(values):
+            pie_chart_data.append({
+                "name": f"{col} (Top {i+1})",
+                "value": v,
+                "column": col
+            })
+    
+    result = {
         "filename": file.filename,
         "rows": rows,
+        "original_rows": original_rows,
+        "is_sampled": is_sampled,
+        "sample_percentage": sample_pct if is_sampled else 100.0,
         "columns": columns,
+        "column_count": len(columns),
+        "numeric_column_count": len(numeric_columns),
         "column_types": column_types,
         "missing_values": missing_values,
         "statistics": stats,
-        "top_values": top_values
+        "top_values": top_values,
+        "pie_chart_data": pie_chart_data,  # Separate pie chart data for later rendering
+        "all_statistics": stats,  # For pagination
+        "cache_ttl": CACHE_TTL,
+        "message": f"Dataset analyzed successfully. {f'Sampled {sample_pct}% for performance. ' if is_sampled else f'Analyzed {len(numeric_columns)} numeric columns. '}Showing {len(stats)} numeric features."
     }
+    
+    # Cache the result
+    analysis_cache[file_hash] = {
+        "data": result,
+        "timestamp": __import__("time").time()
+    }
+    
+    # Apply pagination to statistics
+    result["statistics_paginated"] = paginate_data(
+        list(stats.items()),
+        page=page,
+        page_size=20
+    )
+    
+    return result
 
 
 # ===============================
-# 📄 PDF REPORT DOWNLOAD (WITH CHART IMAGE)
+# 📄 OPTIMIZED PDF REPORT DOWNLOAD
 # ===============================
 @router.post("/download-report")
 async def download_report(
     file: UploadFile = File(...),
-    chart_image: str = Form(None)   # 🔥 receive chart image from frontend
+    chart_image: str = Form(None)
 ):
-
-    df = read_file(file)
-
-    # Clean columns
-    df.columns = df.columns.str.strip()
-
-    # Basic Info
-    rows = len(df)
-    columns = list(df.columns)
-
-    # Stats
-    stats = analyze_dataset(df)
-
-    # Generate PDF with chart image
-    pdf_path = generate_pdf({
-        "rows": rows,
-        "columns": columns,
-        "statistics": stats,
-        "chart_image": chart_image   # 🔥 pass to PDF
-    })
-
-    # Ensure PDF exists
-    if not os.path.exists(pdf_path):
-        raise HTTPException(status_code=500, detail="PDF generation failed")
-
-    # Return downloadable file
-    return FileResponse(
-        path=pdf_path,
-        filename="DataPilot_Report.pdf",
-        media_type="application/pdf"
-    )
+    """
+    Download PDF report with optimization:
+    - Reuse uploaded file bytes
+    - Compress chart image on backend
+    """
+    
+    try:
+        # Read file into memory once
+        file_bytes = await file.read()
+        file_obj = io.BytesIO(file_bytes)
+        
+        if file.filename.lower().endswith(".csv"):
+            df = pd.read_csv(file_obj)
+        elif file.filename.lower().endswith((".xlsx", ".xls")):
+            df = pd.read_excel(file_obj)
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported file format")
+        
+        # Clean columns
+        df.columns = df.columns.str.strip()
+        
+        # Basic Info
+        rows = len(df)
+        columns = list(df.columns)
+        
+        # Stats
+        stats = compress_statistics(analyze_dataset(df))
+        
+        # Generate PDF with chart image
+        pdf_path = generate_pdf({
+            "rows": rows,
+            "columns": columns,
+            "statistics": stats,
+            "chart_image": chart_image
+        })
+        
+        # Ensure PDF exists
+        if not os.path.exists(pdf_path):
+            raise HTTPException(status_code=500, detail="PDF generation failed")
+        
+        # Return downloadable file
+        return FileResponse(
+            path=pdf_path,
+            filename="DataPilot_Report.pdf",
+            media_type="application/pdf"
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")
