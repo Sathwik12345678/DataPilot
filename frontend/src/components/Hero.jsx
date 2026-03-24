@@ -35,7 +35,7 @@ return(
 {splitText("DataPilot")}
 </h1>
 
-<p className="hero-tagline zoom-text">
+<p className="hero-tagline" zoom-text> 
 {splitText("Upload datasets and generate insights instantly")}
 </p>
 

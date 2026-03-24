@@ -1,6 +1,26 @@
-import { Link } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+
+import { clearStoredUser, getStoredUser } from "../utils/auth"
 
 function Navbar(){
+  const navigate = useNavigate()
+  const [user, setUser] = useState(() => getStoredUser())
+
+  useEffect(() => {
+    function onStorage() {
+      setUser(getStoredUser())
+    }
+
+    window.addEventListener("storage", onStorage)
+    return () => window.removeEventListener("storage", onStorage)
+  }, [])
+
+  function handleLogout() {
+    clearStoredUser()
+    setUser(null)
+    navigate("/")
+  }
 
 return(
 
@@ -8,9 +28,7 @@ return(
 
 <div className="nav-container">
 
-<Link to="/" className="logo">
-DataPilot
-</Link>
+<span className="logo-text">DataPilot</span>
 
 <ul className="nav-menu">
 
@@ -22,15 +40,31 @@ DataPilot
 <Link to="/dashboard" className="nav-link">Dashboard</Link>
 </li>
 
-<li>
-<Link to="/login" className="nav-link">Login</Link>
-</li>
+{user ? (
+  <li>
+    <button
+      type="button"
+      className="nav-link nav-logout"
+      onClick={handleLogout}
+    >
+      Logout
+    </button>
+  </li>
+) : (
+  <>
+    <li>
+      <Link to="/login" className="nav-link">
+        Login
+      </Link>
+    </li>
 
-<li>
-<Link to="/signup" className="nav-link nav-link-cta">
-Get Started
-</Link>
-</li>
+    <li>
+      <Link to="/signup" className="nav-link nav-link-cta">
+        Get Started
+      </Link>
+    </li>
+  </>
+)}
 
 </ul>
 

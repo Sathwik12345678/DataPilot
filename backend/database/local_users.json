@@ -1,0 +1,17 @@
+[
+  {
+    "name": "X",
+    "email": "x2@example.com",
+    "password": "$pbkdf2-sha256$29000$pRQiBABgzLn3ntPa.98bQw$GgH9kmtqN6SK3Natg6rhbd9kzDvLIDKM8jFbasHYlkM"
+  },
+  {
+    "name": "TestUser2",
+    "email": "testuser2@example.com",
+    "password": "$pbkdf2-sha256$29000$FULIGcM4R2jtfe.dk3IOIQ$1m/V/yn5f7gojKdPoTSnaT/1WDK0kFrSEwWYvZgUEys"
+  },
+  {
+    "name": "Ponnam Sathwik goud",
+    "email": "goudsathwik55@gmail.com",
+    "password": "$pbkdf2-sha256$29000$s1bqndN67x3jPEcIIWTMuQ$PRCNV4teHDB3hxmMNHvrRbiOSb4YYlM7exKWjsWmKq4"
+  }
+]

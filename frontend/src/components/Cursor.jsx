@@ -4,31 +4,55 @@ function Cursor(){
 
 useEffect(()=>{
 
-const cursor=document.querySelector(".cursor")
-const dot=document.querySelector(".cursor-dot")
-const outline=document.querySelector(".cursor-outline")
+const dot = document.querySelector(".cursor-dot")
+const outline = document.querySelector(".cursor-outline")
 
-window.addEventListener("mousemove",e=>{
+let mouseX = 0
+let mouseY = 0
 
-const x=e.clientX
-const y=e.clientY
+let outlineX = 0
+let outlineY = 0
 
-dot.style.left=x+"px"
-dot.style.top=y+"px"
+/* track mouse instantly */
+document.addEventListener("mousemove",(e)=>{
+mouseX = e.clientX
+mouseY = e.clientY
 
-outline.style.left=x+"px"
-outline.style.top=y+"px"
-
+dot.style.left = mouseX + "px"
+dot.style.top = mouseY + "px"
 })
 
-document.querySelectorAll("h1,h2,p,a,button").forEach(el=>{
+/* smooth follow for outline */
+function animate(){
+
+outlineX += (mouseX - outlineX) * 0.15
+outlineY += (mouseY - outlineY) * 0.15
+
+outline.style.left = outlineX + "px"
+outline.style.top = outlineY + "px"
+
+requestAnimationFrame(animate)
+
+}
+
+animate()
+
+/* hover effect */
+
+const hoverElements = document.querySelectorAll(
+"a, button, .zoom-text span"
+)
+
+hoverElements.forEach(el=>{
 
 el.addEventListener("mouseenter",()=>{
-cursor.classList.add("hovering")
+outline.style.transform = "translate(-50%, -50%) scale(2)"
+dot.style.transform = "translate(-50%, -50%) scale(2.5)"
 })
 
 el.addEventListener("mouseleave",()=>{
-cursor.classList.remove("hovering")
+outline.style.transform = "translate(-50%, -50%) scale(1)"
+dot.style.transform = "translate(-50%, -50%) scale(1)"
 })
 
 })
@@ -40,7 +64,6 @@ return(
 <div className="cursor">
 
 <div className="cursor-dot"></div>
-
 <div className="cursor-outline"></div>
 
 </div>
