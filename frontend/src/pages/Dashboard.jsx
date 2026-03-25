@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
-import axios from "axios"
+import API from "../api/api"
 import { motion as Motion } from "framer-motion"
 import html2canvas from "html2canvas"
 
@@ -107,8 +107,8 @@ function Dashboard(){
       setLoading(true)
       setError(null)
 
-      const response = await axios.post(
-        "http://127.0.0.1:8000/upload-dataset",
+      const response = await API.post(
+        "/upload-dataset",
         formData,
         {
           signal: uploadAbortController.current.signal,
@@ -169,8 +169,8 @@ function Dashboard(){
         }
       }
 
-      const response = await axios.post(
-        "http://127.0.0.1:8000/download-report",
+      const response = await API.post(
+        "/download-report",
         formData,
         {
           responseType: "blob",
