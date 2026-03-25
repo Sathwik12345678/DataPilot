@@ -28,7 +28,12 @@ app.add_middleware(
 # 2. CORS Configuration (IMPORTANT)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ⚠️ Change to frontend URL in production
+    allow_origins=[
+        "http://localhost:5173",  # Vite dev server
+        "http://localhost:3000",  # Alternative dev port
+        "https://datapilot-frontend.onrender.com",  # Replace with your actual frontend URL
+        "*"  # ⚠️ Remove this in production, use specific origins
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
