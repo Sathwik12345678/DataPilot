@@ -24,12 +24,29 @@ def read_file(file: UploadFile):
 
     try:
         if filename.endswith(".csv"):
-            df = pd.read_csv(file.file, dtype={
-                # Optimize data types for memory efficiency
-                'int64': 'int32',  # Reduce int memory usage
-            })
+            # Robust CSV parsing with delimiter sniffing
+            file.file.seek(0)
+            try:
+                df = pd.read_csv(
+                    file.file,
+                    sep=None,
+                    engine="python",
+                    on_bad_lines="warn",
+                    skip_blank_lines=True
+                )
+            except Exception as parse_err:
+                file.file.seek(0)
+                # Gentler fallback, allowing spaces and different delimiters
+                df = pd.read_csv(
+                    file.file,
+                    engine="python",
+                    sep="," if "," in file.filename else None,
+                    usecols=lambda x: True,
+                    on_bad_lines="skip"
+                )
 
         elif filename.endswith(".xlsx") or filename.endswith(".xls"):
+            file.file.seek(0)
             df = pd.read_excel(file.file)
 
         else:
@@ -76,10 +93,31 @@ async def upload_dataset(
     # Parse file from bytes
     try:
         file_obj = io.BytesIO(file_bytes)
+
         if file.filename.lower().endswith(".csv"):
-            df = pd.read_csv(file_obj)
+            file_obj.seek(0)
+            try:
+                df = pd.read_csv(
+                    file_obj,
+                    sep=None,
+                    engine="python",
+                    on_bad_lines="warn",
+                    skip_blank_lines=True
+                )
+            except Exception as parse_err:
+                file_obj.seek(0)
+                df = pd.read_csv(
+                    file_obj,
+                    engine="python",
+                    sep=",",
+                    on_bad_lines="skip",
+                    skip_blank_lines=True
+                )
+
         elif file.filename.lower().endswith((".xlsx", ".xls")):
+            file_obj.seek(0)
             df = pd.read_excel(file_obj)
+
         else:
             raise HTTPException(status_code=400, detail="Unsupported file format")
     except Exception as e:
