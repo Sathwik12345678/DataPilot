@@ -31,9 +31,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",  # Vite dev server
         "http://localhost:3000",  # Alternative dev port
-        "https://datapilot-frontend.onrender.com",  # Render frontend
-        "https://*.vercel.app",  # Vercel deployments
-        "*"  # ⚠️ Allow all origins (update in production for security)
+        "https://datapilot-frontend.onrender.com",  # Replace with your actual frontend URL
+        "*"  # ⚠️ Remove this in production, use specific origins
     ],
     allow_credentials=True,
     allow_methods=["*"],
