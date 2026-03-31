@@ -8,3 +8,4 @@ numpy
 reportlab
 python-multipart
 Pillow
+email-validator
