@@ -111,6 +111,7 @@ function Dashboard(){
         "/upload-dataset",
         formData,
         {
+          headers: { "Content-Type": "multipart/form-data" },
           signal: uploadAbortController.current.signal,
           timeout: 60000  // 60 second timeout
         }
@@ -173,6 +174,7 @@ function Dashboard(){
         "/download-report",
         formData,
         {
+          headers: { "Content-Type": "multipart/form-data" },
           responseType: "blob",
           timeout: 60000
         }
