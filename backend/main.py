@@ -26,14 +26,19 @@ app.add_middleware(
 )
 
 # 2. CORS Configuration (IMPORTANT)
+# Explicit CORS origin list to support Render backend + Vercel frontend
+# do not use wildcard origin with credentials enabled
+allowed_origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://data-pilot-green.vercel.app",
+    "https://datapilot-frontend.onrender.com",
+    "https://datapilot-0b2k.onrender.com"  # Render backend URL
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # Vite dev server
-        "http://localhost:3000",  # Alternative dev port
-        "https://datapilot-frontend.onrender.com",  # Replace with your actual frontend URL
-        "*"  # ⚠️ Remove this in production, use specific origins
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

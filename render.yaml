@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: datapilot-backend
+    runtime: python3
+    root: backend
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT --log-level info
+    envVars:
+      - key: MONGO_URL
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.9

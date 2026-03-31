@@ -146,32 +146,42 @@ async def upload_dataset(
     
     # Filter to numeric columns only for performance
     numeric_df = filter_numeric_columns(sampled_df, max_columns=15)
-    
-    # Stats (numeric only) - now with compressed precision
-    stats = compress_statistics(analyze_dataset(numeric_df))
-    
-    # Top-K values using Heap (DSA) - separated for pie chart
-    top_values = {}
     numeric_columns = numeric_df.columns
-    
-    for col in numeric_columns:
-        values = numeric_df[col].dropna().tolist()
-        if len(values) > 0:
-            top_values[col] = [round(v, 2) if isinstance(v, float) else v 
-                              for v in top_k_values(values, 3)]
-        else:
-            top_values[col] = []
-    
-    # Generate pie chart data separately (for later display)
-    pie_chart_data = []
-    for col, values in top_values.items():
-        for i, v in enumerate(values):
-            pie_chart_data.append({
-                "name": f"{col} (Top {i+1})",
-                "value": v,
-                "column": col
-            })
-    
+
+    # Stats (numeric only) - now with compressed precision
+    if len(numeric_columns) == 0:
+        stats = {}
+        top_values = {}
+        pie_chart_data = []
+    else:
+        stats = compress_statistics(analyze_dataset(numeric_df))
+
+        # Top-K values using Heap (DSA) - separated for pie chart
+        top_values = {}
+        for col in numeric_columns:
+            values = numeric_df[col].dropna().tolist()
+            if len(values) > 0:
+                top_values[col] = [round(v, 2) if isinstance(v, float) else v 
+                                  for v in top_k_values(values, 3)]
+            else:
+                top_values[col] = []
+
+        # Generate pie chart data separately (for later display)
+        pie_chart_data = []
+        for col, values in top_values.items():
+            for i, v in enumerate(values):
+                pie_chart_data.append({
+                    "name": f"{col} (Top {i+1})",
+                    "value": v,
+                    "column": col
+                })
+
+    message = "Dataset analyzed successfully. "
+    if len(numeric_columns) == 0:
+        message += "No numeric columns found; showing row/column summary only."
+    else:
+        message += f"{('Sampled ' + str(sample_pct) + '% for performance. ') if is_sampled else ('Analyzed ' + str(len(numeric_columns)) + ' numeric columns. ')}Showing {len(stats)} numeric features."
+
     result = {
         "filename": file.filename,
         "rows": rows,
@@ -188,7 +198,7 @@ async def upload_dataset(
         "pie_chart_data": pie_chart_data,  # Separate pie chart data for later rendering
         "all_statistics": stats,  # For pagination
         "cache_ttl": CACHE_TTL,
-        "message": f"Dataset analyzed successfully. {f'Sampled {sample_pct}% for performance. ' if is_sampled else f'Analyzed {len(numeric_columns)} numeric columns. '}Showing {len(stats)} numeric features."
+        "message": message
     }
     
     # Cache the result
