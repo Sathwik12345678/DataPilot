@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom"
 import Starfield from "../components/Starfield"
 import Navbar from "../components/Navbar"
 import API from "../api/api"
+import { setStoredUser } from "../utils/auth"
 
 function Signup() {
   const navigate = useNavigate()
@@ -25,8 +26,14 @@ function Signup() {
 
     try {
       setLoading(true)
-      await API.post("/signup", { name, email, password })
-      navigate("/login")
+      const response = await API.post("/signup", { name, email, password })
+
+      if (response?.data?.user) {
+        setStoredUser(response.data.user)
+        navigate("/dashboard")
+      } else {
+        navigate("/login")
+      }
     } catch (err) {
       setError(err?.response?.data?.detail || "Signup failed. Please try again.")
     } finally {
