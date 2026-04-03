@@ -41,15 +41,22 @@ return(
 </li>
 
 {user ? (
-  <li>
-    <button
-      type="button"
-      className="nav-link nav-logout"
-      onClick={handleLogout}
-    >
-      Logout
-    </button>
-  </li>
+  <>
+    <li>
+      <Link to="/profile" className="nav-link">
+        👤 Profile
+      </Link>
+    </li>
+    <li>
+      <button
+        type="button"
+        className="nav-link nav-logout"
+        onClick={handleLogout}
+      >
+        Logout
+      </button>
+    </li>
+  </>
 ) : (
   <>
     <li>

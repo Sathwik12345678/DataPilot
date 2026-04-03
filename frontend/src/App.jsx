@@ -4,6 +4,7 @@ import Landing from "./pages/Landing"
 import Login from "./pages/Login.jsx"
 import Signup from "./pages/Signup"
 import Dashboard from "./pages/Dashboard"
+import Profile from "./pages/Profile"
 import ProtectedRoute from "./components/ProtectedRoute"
 
 import Cursor from "./components/Cursor"
@@ -23,6 +24,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

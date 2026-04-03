@@ -22,6 +22,16 @@
   {
     "name": "Sathwik",
     "email": "2303a51780@sru.edu.in",
-    "password": "$pbkdf2-sha256$29000$lXKuldJaay1lbI1xjvHemw$UhiQqPYrkLG1rcboHVhkzskwL2SewJN5dTGkpVNeJXU"
+    "password": "$pbkdf2-sha256$29000$lXKuldJaay1lbI1xjvHemw$UhiQqPYrkLG1rcboHVhkzskwL2SewJN5dTGkpVNeJXU",
+    "datasets_analyzed": [
+      {
+        "filename": "sales_dataset.csv",
+        "rows": 500,
+        "columns": 5,
+        "analyzed_at": "2026-04-03T09:10:58.925640"
+      }
+    ],
+    "total_analyses": 1,
+    "last_analysis": "2026-04-03T09:10:58.925749"
   }
 ]

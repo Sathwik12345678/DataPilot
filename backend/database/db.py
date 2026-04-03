@@ -54,6 +54,33 @@ class LocalUsersCollection:
             users.append(doc)
             self._save_all(users)
 
+    def update_one(self, query: dict, update_data: dict) -> None:
+        """Update a document. Supports {"email": "..."} query and {"$set": {...}} update format"""
+        email = query.get("email")
+        if not email:
+            return
+        
+        with self._lock:
+            users = self._load_all()
+            for i, u in enumerate(users):
+                if u.get("email") == email:
+                    # Handle both direct update and $set format
+                    if "$set" in update_data:
+                        users[i].update(update_data["$set"])
+                    else:
+                        users[i].update(update_data)
+                    self._save_all(users)
+                    return
+            
+            # If user doesn't exist, add as new
+            new_user = {"email": email}
+            if "$set" in update_data:
+                new_user.update(update_data["$set"])
+            else:
+                new_user.update(update_data)
+            users.append(new_user)
+            self._save_all(users)
+
 
 def _get_users_collection():
     mongo_url = os.getenv("MONGO_URL")

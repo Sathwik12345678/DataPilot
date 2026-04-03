@@ -11,6 +11,7 @@ from services.optimization_service import (
     get_file_hash, paginate_data, compress_statistics, 
     sample_large_dataset, filter_numeric_columns, CACHE_TTL, analysis_cache
 )
+from services.auth_service import track_dataset_analysis
 from utils.pdf_generator import generate_pdf
 
 router = APIRouter()
@@ -64,7 +65,8 @@ def read_file(file: UploadFile):
 @router.post("/upload-dataset")
 async def upload_dataset(
     file: UploadFile = File(...),
-    page: int = Query(1, ge=1, description="Page number for pagination")
+    page: int = Query(1, ge=1, description="Page number for pagination"),
+    user_email: str = Query(None, description="User email for tracking analysis")
 ):
     """
     Upload and analyze dataset with optimization features:
@@ -213,6 +215,22 @@ async def upload_dataset(
         page=page,
         page_size=20
     )
+    
+    # Track dataset analysis for user if email provided
+    if user_email:
+        try:
+            # Extract key analysis results for storage
+            analysis_data = {
+                "statistics": result.get("all_statistics", {}),
+                "column_types": result.get("column_types", {}),
+                "missing_values": result.get("missing_values", {}),
+                "top_values": result.get("top_values", {}),
+                "numeric_column_count": result.get("numeric_column_count", 0)
+            }
+            track_dataset_analysis(user_email, file.filename, original_rows, len(columns), analysis_data)
+        except Exception as e:
+            # Log but don't fail the request if tracking fails
+            print(f"Warning: Failed to track dataset analysis: {str(e)}")
     
     return result
 

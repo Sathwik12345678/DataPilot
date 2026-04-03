@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import API from "../api/api"
 import { motion as Motion } from "framer-motion"
 import html2canvas from "html2canvas"
+import { getStoredUser } from "../utils/auth"
 
 import Starfield from "../components/Starfield"
 import Navbar from "../components/Navbar"
@@ -107,8 +108,11 @@ function Dashboard(){
       setLoading(true)
       setError(null)
 
+      const user = getStoredUser()
+      const userEmail = user?.email ? `?user_email=${encodeURIComponent(user.email)}` : ""
+
       const response = await API.post(
-        "/upload-dataset",
+        `/upload-dataset${userEmail}`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

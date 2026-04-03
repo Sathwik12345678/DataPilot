@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr, constr
 
-from services.auth_service import create_user, login_user
+from services.auth_service import create_user, login_user, get_user_profile, get_dataset_analysis
 
 
 router = APIRouter()
@@ -60,4 +60,38 @@ def login(data: LoginRequest):
             "name": user["name"],
             "email": user["email"]
         }
+    }
+
+
+@router.get("/profile/{email}")
+def get_profile(email: str):
+    """Get user profile with analysis history"""
+    try:
+        profile = get_user_profile(email)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch profile: {str(exc)}")
+    
+    if not profile:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {
+        "message": "Profile retrieved successfully",
+        "profile": profile
+    }
+
+
+@router.get("/analysis/{email}/{dataset_filename}")
+def get_analysis(email: str, dataset_filename: str):
+    """Get detailed analysis results for a specific dataset"""
+    try:
+        analysis = get_dataset_analysis(email, dataset_filename)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch analysis: {str(exc)}")
+    
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Dataset analysis not found")
+    
+    return {
+        "message": "Analysis retrieved successfully",
+        "analysis": analysis
     }
