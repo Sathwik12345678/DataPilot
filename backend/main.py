@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
@@ -35,10 +37,14 @@ allowed_origins = [
     "https://datapilot-frontend.onrender.com",
     "https://datapilot-0b2k.onrender.com"  # Render backend URL
 ]
+configured_frontend_url = os.getenv("FRONTEND_URL")
+if configured_frontend_url:
+    allowed_origins.append(configured_frontend_url.rstrip("/"))
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=r"https://[a-zA-Z0-9-]+\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
